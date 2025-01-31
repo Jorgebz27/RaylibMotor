@@ -10,8 +10,76 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include "raylib.h"
 #include "rlgl.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+
+typedef struct {
+    int resX;
+    int resY;
+    int fullscreen;
+    int vsync;
+} VideoConfig;
+
+typedef enum {
+    L_DEBUG,
+    L_INFO,
+    L_WARN,
+    L_ERROR
+} LogLevel;
+
+typedef struct {
+    LogLevel level;
+    char channel[50];
+    char message[256];
+} LogMessage;
+
+LogLevel currentLogLevel = L_DEBUG;
+
+void LoadConfig(VideoConfig* config) {
+    FILE* file = fopen("config.ini", "r");
+    if (file == NULL) {
+        printf("No se pudo abrir el archivo config.ini\n");
+        return;
+    }
+
+    char line[128];
+    while (fgets(line, sizeof(line), file)) {
+        if (sscanf(line, "resx=%d", &config->resX) == 1) continue;
+        if (sscanf(line, "resy=%d", &config->resY) == 1) continue;
+        if (sscanf(line, "fullscreen=%d", &config->fullscreen) == 1) continue;
+        if (sscanf(line, "vsync=%d", &config->vsync) == 1) continue;
+    }
+
+    fclose(file);
+}
+
+void SetLogLevel(LogLevel level) {
+    currentLogLevel = level;
+}
+
+void MyPrintLog(LogMessage logMessage) {
+    const char* levelStr;
+    switch (logMessage.level) {
+    case L_DEBUG: levelStr = "DEBUG"; break;
+    case L_INFO: levelStr = "INFO"; break;
+    case L_WARN: levelStr = "WARN"; break;
+    case L_ERROR: levelStr = "ERROR"; break;
+    default: levelStr = "UNKNOWN"; break;
+    }
+    printf("[%s] [%s] %s\n", levelStr, logMessage.channel, logMessage.message);
+
+}
+void MyDebugLog(LogLevel level, const char* channel, const char* message) {
+    if (level >= currentLogLevel) {
+        LogMessage logMessage;
+        logMessage.level = level;
+        strncpy(logMessage.channel, channel, sizeof(logMessage.channel) - 1);
+        strncpy(logMessage.message, message, sizeof(logMessage.message) - 1);
+        MyPrintLog(logMessage);
+    }
+}
 
 void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color)
 {
@@ -74,36 +142,36 @@ void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float hei
     rlSetTexture(0);
 }
 
+
+
 int main(int argc, char** argv)
 {
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
-    int resX = 1920;
-    int resY = 1080;
+    VideoConfig config = { 1920, 1080, 0, 1 };  // valores por defecto
+    LoadConfig(&config);
 
-    if (argc > 2)
-    {
-        for (int i = 0; i < argc; i++)
-        {
-            //std::cout << "arg " << i << argv[i] << std::endl;
-            fprintf(stderr, "arg %i : %s \n", i, argv[i]);
-
-            if (strcmp(argv[i], "-resX") == 0)
-            {
-                resX = atoi(argv[i] + 1);
-            }
-            if (strcmp(argv[i], "-resY") == 0)
-            {
-                resY = atoi(argv[i] + 1);
-            }
-        }
+    if (config.vsync) {
+        SetConfigFlags(FLAG_VSYNC_HINT);
+    }
+    if (config.fullscreen) {
+        SetConfigFlags(FLAG_FULLSCREEN_MODE);
     }
 
 	// Create the window and OpenGL context
-	InitWindow(resX, resY, "Hello Raylib");
-	//ToggleFullscreen();
-    SetWindowState(FLAG_FULLSCREEN_MODE);
+    InitWindow(config.resX, config.resY, "GameEngine");
+    //SetWindowState(FLAG_FULLSCREEN_MODE);
+
+    SetLogLevel(L_DEBUG);
+
+    MyDebugLog(L_DEBUG, "Main", "This is a debug message");
+    MyDebugLog(L_INFO, "Main", "This is an info message");
+    MyDebugLog(L_WARN, "Main", "This is a warning message");
+    MyDebugLog(L_ERROR, "Main", "This is an error message");
+
+
+    printf("Initializing game subsystem");
 
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	SearchAndSetResourceDir("resources");
@@ -113,10 +181,10 @@ int main(int argc, char** argv)
 	Texture cube = LoadTexture("texturacubo.png");
 
     //Modelo 3d con textura
-    Model model = LoadModel("resources/Angry_Bird_Red.obj");
-    Texture2D texture = LoadTexture("resources/Angry_Bird.png");
-    model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-    Vector3 position = { 0.0f, 0.0f, 0.0f };
+    //Model model = LoadModel("resources/Angry_Bird_Red.obj");
+    //Texture2D texture = LoadTexture("resources/Angry_Bird.png");
+    //model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+    //Vector3 position = { 0.0f, 0.0f, 0.0f };
 
 	Camera3D camera = {0};
 	camera.position = (Vector3){ 4,0,2 };
@@ -138,8 +206,8 @@ int main(int argc, char** argv)
 		BeginMode3D(camera);
 		//DrawCube((Vector3) { 0, 0, 0 }, 1, 1, 1, RED);
 
-        //DrawCubeTexture(cube, (Vector3){0, 0, 0}, 2, 2, 2, WHITE);
-        DrawModel(model, position, 2.0f, WHITE);
+        DrawCubeTexture(cube, (Vector3){0, 0, 0}, 2, 2, 2, WHITE);
+        //DrawModel(model, position, 2.0f, WHITE);
 
 		DrawGrid(20, 10);
 		//// draw some text using the default font
@@ -156,8 +224,8 @@ int main(int argc, char** argv)
 	// unload our texture so it can be cleaned up
 	UnloadTexture(wabbit);
     UnloadTexture(cube);
-    UnloadTexture(texture);
-    UnloadModel(model);
+    //UnloadTexture(texture);
+    //UnloadModel(model);
 
 	// destroy the window and cleanup the OpenGL context
 	CloseWindow();
