@@ -79,8 +79,8 @@ int main(int argc, char** argv)
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
-    int resX = 1024;
-    int resY = 768;
+    int resX = 1920;
+    int resY = 1080;
 
     if (argc > 2)
     {
@@ -112,6 +112,12 @@ int main(int argc, char** argv)
 	Texture wabbit = LoadTexture("wabbit_alpha.png");
 	Texture cube = LoadTexture("texturacubo.png");
 
+    //Modelo 3d con textura
+    Model model = LoadModel("resources/Angry_Bird_Red.obj");
+    Texture2D texture = LoadTexture("resources/Angry_Bird.png");
+    model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+    Vector3 position = { 0.0f, 0.0f, 0.0f };
+
 	Camera3D camera = {0};
 	camera.position = (Vector3){ 4,0,2 };
 	camera.target = (Vector3){ 0,0,0 };
@@ -132,9 +138,10 @@ int main(int argc, char** argv)
 		BeginMode3D(camera);
 		//DrawCube((Vector3) { 0, 0, 0 }, 1, 1, 1, RED);
 
-        DrawCubeTexture(cube, (Vector3){0, 0, 0}, 2, 2, 2, WHITE);
+        //DrawCubeTexture(cube, (Vector3){0, 0, 0}, 2, 2, 2, WHITE);
+        DrawModel(model, position, 2.0f, WHITE);
 
-		DrawGrid(20, 1);
+		DrawGrid(20, 10);
 		//// draw some text using the default font
 		//DrawText("Hello Raylib", 200,200,20,WHITE);
 		EndMode3D();
@@ -148,6 +155,9 @@ int main(int argc, char** argv)
 	// cleanup
 	// unload our texture so it can be cleaned up
 	UnloadTexture(wabbit);
+    UnloadTexture(cube);
+    UnloadTexture(texture);
+    UnloadModel(model);
 
 	// destroy the window and cleanup the OpenGL context
 	CloseWindow();
