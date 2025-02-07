@@ -12,8 +12,19 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream>
+#include "GameObject.h"
+#include <vector>
+#include "MemoryManager.h"
+//#include <windows.h>
+//#include <winhttp.h>
 
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+
+typedef struct {
+    char* data;
+    size_t size;
+} ImageData;
 
 typedef struct {
     int resX;
@@ -162,6 +173,14 @@ int main(int argc, char** argv)
 	// Create the window and OpenGL context
     InitWindow(config.resX, config.resY, "GameEngine");
     //SetWindowState(FLAG_FULLSCREEN_MODE);
+	std::vector<GameObject*> gameObjects;
+
+	for (int i = 0; i < 1000; i++) {
+		GameObject* go = GameObject::SpawnGO({ 5.0f*i,5.0f*i }, { 300,5.0f*i }, "patricio");
+		gameObjects.push_back(go);
+	}
+
+	MemoryManager::getInstance()->alloc(2*1024*1024*1024);
 
     SetLogLevel(L_DEBUG);
 
@@ -187,9 +206,9 @@ int main(int argc, char** argv)
     //Vector3 position = { 0.0f, 0.0f, 0.0f };
 
 	Camera3D camera = {0};
-	camera.position = (Vector3){ 4,0,2 };
-	camera.target = (Vector3){ 0,0,0 };
-	camera.up = (Vector3){ 0,1,0 };
+	camera.position = { 4,0,2 };
+	camera.target = { 0,0,0 };
+	camera.up = { 0,1,0 };
 	camera.fovy = 120;
 	camera.projection = CAMERA_PERSPECTIVE;
 	
@@ -198,6 +217,11 @@ int main(int argc, char** argv)
 	{
 		UpdateCamera(&camera, CAMERA_FREE);
 		// drawing
+
+		for (int i = 0; i < gameObjects.size(); i++) {
+			gameObjects[i]->update();
+		}
+
 		BeginDrawing();
 
 		// Setup the back buffer for drawing (clear color and depth buffers)
@@ -206,7 +230,7 @@ int main(int argc, char** argv)
 		BeginMode3D(camera);
 		//DrawCube((Vector3) { 0, 0, 0 }, 1, 1, 1, RED);
 
-        DrawCubeTexture(cube, (Vector3){0, 0, 0}, 2, 2, 2, WHITE);
+        DrawCubeTexture(cube, {0, 0, 0}, 2, 2, 2, WHITE);
         //DrawModel(model, position, 2.0f, WHITE);
 
 		DrawGrid(20, 10);
@@ -215,7 +239,11 @@ int main(int argc, char** argv)
 		EndMode3D();
 		//// draw our texture to the screen
 		//DrawTexture(wabbit, 400, 200, WHITE);
-		
+
+		for (int i = 0; i < gameObjects.size(); i++) {
+			gameObjects[i]->draw();
+		}
+
 		// end the frame and get ready for the next one  (display frame, poll input, etc...)
 		EndDrawing();
 	}
