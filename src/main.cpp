@@ -16,6 +16,7 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include "GameObject.h"
 #include <vector>
 #include "MemoryManager.h"
+#include "AudioManager.h"
 //#include <windows.h>
 //#include <winhttp.h>
 
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
-    VideoConfig config = { 1920, 1080, 0, 1 };  // valores por defecto
+    VideoConfig config = { 640, 480, 0, 1 };  // valores por defecto
     LoadConfig(&config);
 
     if (config.vsync) {
@@ -173,12 +174,13 @@ int main(int argc, char** argv)
 	// Create the window and OpenGL context
     InitWindow(config.resX, config.resY, "GameEngine");
     //SetWindowState(FLAG_FULLSCREEN_MODE);
-	std::vector<GameObject*> gameObjects;
+	//std::vector<GameObject*> gameObjects;
 
-	for (int i = 0; i < 1000; i++) {
-		GameObject* go = GameObject::SpawnGO({ 5.0f*i,5.0f*i }, { 300,5.0f*i }, "patricio");
-		gameObjects.push_back(go);
-	}
+	//for (int i = 0; i < 1000; i++) {
+	//	GameObject* go = GameObject::SpawnGO({ 5.0f*i,5.0f*i }, { 300,5.0f*i }, "patricio");
+	//	go->enabled = i % 2 == 0;
+	//	gameObjects.push_back(go);
+	//}
 
 	MemoryManager::getInstance()->alloc(2*1024*1024*1024);
 
@@ -194,6 +196,8 @@ int main(int argc, char** argv)
 
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	SearchAndSetResourceDir("resources");
+
+    GameObject* go = new GameObject();
 
 	// Load a texture from the resources directory
 	Texture wabbit = LoadTexture("wabbit_alpha.png");
@@ -211,18 +215,28 @@ int main(int argc, char** argv)
 	camera.up = { 0,1,0 };
 	camera.fovy = 120;
 	camera.projection = CAMERA_PERSPECTIVE;
+
+    AudioManager::getInstance()->LoadbgMusic("TECNO1.XM");
+	AudioManager::getInstance()->PlaybgMusic();
 	
 	// game loop
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
 	{
+		AudioManager::getInstance()->Update();
+
 		UpdateCamera(&camera, CAMERA_FREE);
 		// drawing
 
-		for (int i = 0; i < gameObjects.size(); i++) {
-			gameObjects[i]->update();
-		}
+		//for (int i = 0; i < gameObjects.size(); i++) 
+        //{
+        //    if(gameObjects[i]->enabled)
+		//	    gameObjects[i]->update();
+		//}
+        go->Update(GetFrameTime());
 
 		BeginDrawing();
+
+		go->Draw(GetFrameTime());
 
 		// Setup the back buffer for drawing (clear color and depth buffers)
 		ClearBackground(BLACK);
@@ -238,11 +252,11 @@ int main(int argc, char** argv)
 		//DrawText("Hello Raylib", 200,200,20,WHITE);
 		EndMode3D();
 		//// draw our texture to the screen
-		//DrawTexture(wabbit, 400, 200, WHITE);
+		DrawTexture(wabbit, 400, 200, WHITE);
 
-		for (int i = 0; i < gameObjects.size(); i++) {
-			gameObjects[i]->draw();
-		}
+		//for (int i = 0; i < gameObjects.size(); i++) {
+		//	gameObjects[i]->draw();
+		//}
 
 		// end the frame and get ready for the next one  (display frame, poll input, etc...)
 		EndDrawing();
