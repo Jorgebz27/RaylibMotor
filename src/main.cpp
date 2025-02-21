@@ -22,6 +22,10 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
+extern "C" {
+#include "md5.h"
+}
+
 typedef struct {
     char* data;
     size_t size;
@@ -158,6 +162,24 @@ void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float hei
 
 int main(int argc, char** argv)
 {
+
+    char* input = "hola mundo";
+	uint8_t result[16];
+	md5String(input, result);
+
+	for (int i = 0; i < 16; i++) {
+		printf("%02x", result[i]);
+	}
+	printf("\n");
+
+    char hash[33];
+    for (int i = 0; i < 16; i++)
+    {
+		sprintf(&hash[i*2], "%02x", (unsigned int)result[i]);
+    }
+    puts("");
+	std::cout << hash << std::endl;
+
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
@@ -197,7 +219,7 @@ int main(int argc, char** argv)
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	SearchAndSetResourceDir("resources");
 
-    GameObject* go = new GameObject();
+    //GameObject* go = new GameObject();
 
 	// Load a texture from the resources directory
 	Texture wabbit = LoadTexture("wabbit_alpha.png");
@@ -232,11 +254,11 @@ int main(int argc, char** argv)
         //    if(gameObjects[i]->enabled)
 		//	    gameObjects[i]->update();
 		//}
-        go->Update(GetFrameTime());
+        //go->Update(GetFrameTime());
 
 		BeginDrawing();
 
-		go->Draw(GetFrameTime());
+		//go->Draw(GetFrameTime());
 
 		// Setup the back buffer for drawing (clear color and depth buffers)
 		ClearBackground(BLACK);

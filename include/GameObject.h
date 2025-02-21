@@ -21,9 +21,9 @@ public:
 	//void init();
 	//void init(Vector2 pos, Vector2 vel);
 	//void init(Vector2 pos, Vector2 vel, Color color);
-	virtual void Start() = 0;
-	virtual void Update(float deltaTime) = 0;
-	virtual void Draw(float deltatime) = 0;
+	void Start();
+	void Update(float deltaTime);
+	void Draw(float deltatime);
 
 	//void setVelocity(Vector2 vel) { velocity = vel; }
 	//static GameObject* SpawnGO(Vector2 pos, Vector2 vel, std::string _name);
