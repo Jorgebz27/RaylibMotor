@@ -53,6 +53,7 @@ typedef struct {
 
 LogLevel currentLogLevel = L_DEBUG;
 
+//
 void LoadConfig(VideoConfig* config) {
     FILE* file = fopen("config.ini", "r");
     if (file == NULL) {
