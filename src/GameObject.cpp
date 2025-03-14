@@ -84,7 +84,7 @@ void GameObject::Update(float deltaTime)
 {
 	for (auto& comp : components)
 	{
-		comp->Update();
+		comp->Update(deltaTime);
 	}
 }
 
@@ -94,7 +94,7 @@ void GameObject::Draw(float deltaTime)
 	{
 		if (comp->ShouldDraw())
 		{
-			comp->Draw();
+			comp->Draw(deltaTime);
 		}
 	}
 }

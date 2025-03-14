@@ -15,11 +15,10 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include <iostream>
 #include "GameObject.h"
 #include <vector>
+#include "CubeComponent.h"
 #include "MemoryManager.h"
 #include "AudioManager.h"
-//#include <windows.h>
-//#include <winhttp.h>
-
+#include "WebRequestTest.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
 extern "C" {
@@ -53,7 +52,6 @@ typedef struct {
 
 LogLevel currentLogLevel = L_DEBUG;
 
-//
 void LoadConfig(VideoConfig* config) {
     FILE* file = fopen("config.ini", "r");
     if (file == NULL) {
@@ -159,27 +157,12 @@ void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float hei
     rlSetTexture(0);
 }
 
-
-
 int main(int argc, char** argv)
 {
 
-    char* input = "hola mundo";
-	uint8_t result[16];
-	md5String(input, result);
-
-	for (int i = 0; i < 16; i++) {
-		printf("%02x", result[i]);
-	}
-	printf("\n");
-
-    char hash[33];
-    for (int i = 0; i < 16; i++)
-    {
-		sprintf(&hash[i*2], "%02x", (unsigned int)result[i]);
-    }
-    puts("");
-	std::cout << hash << std::endl;
+    //NO FUNCIONA
+	//WebRequestTest webReq;
+	//webReq.testWebLua();
 
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -197,13 +180,19 @@ int main(int argc, char** argv)
 	// Create the window and OpenGL context
     InitWindow(config.resX, config.resY, "GameEngine");
     //SetWindowState(FLAG_FULLSCREEN_MODE);
-	//std::vector<GameObject*> gameObjects;
 
-	//for (int i = 0; i < 1000; i++) {
-	//	GameObject* go = GameObject::SpawnGO({ 5.0f*i,5.0f*i }, { 300,5.0f*i }, "patricio");
-	//	go->enabled = i % 2 == 0;
-	//	gameObjects.push_back(go);
-	//}
+    GameObject* go = new GameObject();
+    ptrComponent newComp = std::make_shared<CubeComponent>();
+    go->AddComponent(newComp);
+
+    std::vector<GameObject*> gameobjects;
+    for (int i = 0; i < 100; i++)
+    {
+        GameObject* go = new GameObject();
+        ptrComponent newComp = std::make_shared<CubeComponent>();
+        go->AddComponent(newComp);
+        gameobjects.push_back(go);
+    }
 
 	MemoryManager::getInstance()->alloc(2*1024*1024*1024);
 
@@ -257,7 +246,13 @@ int main(int argc, char** argv)
 		//}
         //go->Update(GetFrameTime());
 
+        for (auto& go : gameobjects)
+        {
+            go->Update(GetFrameTime());
+        }
+
 		BeginDrawing();
+
 
 		//go->Draw(GetFrameTime());
 
@@ -266,6 +261,11 @@ int main(int argc, char** argv)
 
 		BeginMode3D(camera);
 		//DrawCube((Vector3) { 0, 0, 0 }, 1, 1, 1, RED);
+
+        for (auto& go : gameobjects)
+        {
+            go->Draw(GetFrameTime());
+        }
 
         DrawCubeTexture(cube, {0, 0, 0}, 2, 2, 2, WHITE);
         //DrawModel(model, position, 2.0f, WHITE);
